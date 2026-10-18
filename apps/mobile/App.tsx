@@ -245,9 +245,9 @@ export default function App() {
     </View>
   );
 
-  const renderIntro = (intro: Intro, title: string) => {
+  const renderIntro = (intro: Intro, title: string, isOwner = false) => {
     if (!intro.person || !intro.id || intro.declined) return null;
-    const accepted = me?.id === intro.person.id ? intro.candidate_accepted : intro.owner_accepted;
+    const accepted = isOwner ? intro.owner_accepted : intro.candidate_accepted;
     return (
       <View key={intro.id} style={styles.panel}>
         <Text style={styles.heading}>{title}</Text>
@@ -321,7 +321,7 @@ export default function App() {
                   </>}
               </View>
               {me?.ready && <>
-                {today?.person ? renderIntro(today, 'Dzisiejszy rezonans')
+                {today?.person ? renderIntro(today, 'Dzisiejszy rezonans', true)
                   : <View style={styles.panel}><Text style={styles.body}>Dzisiaj nie ma nowej propozycji.</Text></View>}
                 {inbox.map(item => renderIntro(item, 'Ktoś chce Cię poznać'))}
                 <View style={styles.panel}>
