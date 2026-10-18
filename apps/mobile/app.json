@@ -1,0 +1,20 @@
+{
+  "expo": {
+    "name": "AURA Date",
+    "slug": "aura-date",
+    "scheme": "auradate",
+    "version": "0.1.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "dark",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.auradate.app"
+    },
+    "android": {
+      "package": "com.auradate.app"
+    },
+    "plugins": [
+      "expo-secure-store"
+    ]
+  }
+}
