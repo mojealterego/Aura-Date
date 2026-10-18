@@ -124,3 +124,50 @@ def test_account_deletion_revokes_identity_and_erases_messages(client):
     assert client.get("/api/v1/me", headers=alice).status_code == 401
     assert client.get("/api/v1/conversations", headers=bob).json() == []
     assert client.get(f"/api/v1/conversations/{convo}/messages", headers=bob).status_code == 404
+
+
+def test_three_active_conversation_limit_and_release(client):
+    from datetime import date, timedelta
+
+    from sqlalchemy.orm import Session
+    from aura_api.models import Conversation, Introduction
+
+    owner_auth, owner_id, _ = new_user(client, name="Owner")
+    other_ids = [new_user(client, name=f"Other{i}")[1] for i in range(4)]
+    with Session(client.app.state.engine) as session:
+        for i, other_id in enumerate(other_ids):
+            intro = Introduction(
+                owner_id=other_id,
+                candidate_id=owner_id,
+                day=date(2026, 1, 1) + timedelta(days=i),
+                owner_accepts=True,
+                candidate_accepts=i < 3,
+            )
+            session.add(intro)
+            session.flush()
+            if i < 3:
+                session.add(Conversation(introduction_id=intro.id))
+            else:
+                fourth_id = intro.id
+        session.commit()
+    before = client.post(f"/api/v1/introductions/{fourth_id}/accept", headers=owner_auth)
+    assert before.status_code == 409
+    existing = client.get("/api/v1/conversations", headers=owner_auth).json()
+    assert len(existing) == 3
+    close = client.post(
+        f"/api/v1/conversations/{existing[0]['id']}/close", headers=owner_auth)
+    assert close.status_code == 200
+    after = client.post(f"/api/v1/introductions/{fourth_id}/accept", headers=owner_auth)
+    assert after.status_code == 200
+    assert after.json()["mutual"] is True
+    assert len(client.get("/api/v1/conversations", headers=owner_auth).json()) == 3
+
+
+def test_no_messages_without_mutual_consent(client):
+    alice, _, _ = new_user(client, name="Alice")
+    bob, _, _ = new_user(client, name="Bob")
+    intro = client.get("/api/v1/introductions/today", headers=alice).json()
+    assert client.post(f"/api/v1/introductions/{intro['id']}/accept",
+                       headers=alice).json()["conversation_id"] is None
+    assert client.get("/api/v1/conversations", headers=alice).json() == []
+    assert client.get("/api/v1/conversations", headers=bob).json() == []
