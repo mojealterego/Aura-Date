@@ -363,8 +363,7 @@ def create_app(database_url: str | None = None) -> FastAPI:
         for intro_id in ids:
             conv = db.scalar(select(Conversation).where(Conversation.introduction_id == intro_id))
             if conv:
-                for msg in db.scalars(select(Message).where(Message.conversation_id == conv.id)).all():
-                    db.delete(msg)
+                # DB foreign-key ON DELETE CASCADE erases messages exactly once.
                 db.delete(conv)
         for intro in introductions:
             db.delete(intro)
