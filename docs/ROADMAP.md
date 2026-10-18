@@ -13,7 +13,9 @@ A checked item does not mean deployed or security-certified.
 - [x] Blocking, user-generated abuse reports, chat closing
 - [x] Expo mobile UI for core interaction flows
 - [x] Automated API tests and GitHub Actions definition
-- [~] Local verification (check test outputs and CI run IDs separately)
+- [x] GitHub Actions verified: run [39172209743](https://github.com/mojealterego/Aura-Date/actions/runs/39172209743) (commit c6ad40b): 6 API tests passed, mobile TypeScript typecheck passed
+- [ ] Android/iOS emulator or device end-to-end test (not performed)
+- [ ] Two-host multi-user and PostgreSQL concurrency verification (not performed)
 
 ## P1 — launch-blocking controls
 - [ ] Verified adult age assurance; no minors onboarding
